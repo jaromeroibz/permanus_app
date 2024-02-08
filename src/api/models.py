@@ -178,6 +178,7 @@ class Products(db.Model):
 class ProductItem(db.Model):
     __tablename__ = 'product_item'
     id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
     products = db.relationship(Products)
     sku = db.Column(db.Integer, nullable = False, unique = True)

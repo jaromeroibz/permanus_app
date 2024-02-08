@@ -197,7 +197,7 @@ def delete_address(address_id):
 @api.route('/get_products', methods=['GET'])
 def get_products():
     
-    all_products = ProductItem.query.all()
+    all_products = Products.query.all()
     result = list(map(lambda item: item.serialize(), all_products))
 
     return jsonify(result) 
@@ -209,21 +209,71 @@ def add_products():
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
     body = request.get_json()
+    product = Products.query.filter_by(name=body["name"]).first()
+    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
+    category_info = category.serialize()
+    print(category_info)
 
-    if user.is_admin is True:
+    if user.is_admin is True and product == None:
 
         product = Products(
         name = body['name'],
         description = body['description'],
+        category_id = category_info['id']
         )
         db.session.add(product)
         db.session.commit()
 
-    response_body = {
-        "message": "Product created"
-    }
+        response_body = {
+            "message": "Product created"
+        }
 
+        return jsonify(response_body), 200
+    else:
+        return jsonify({"msg": "product already exists with this name"}), 401
+
+@api.route('/update_products/<int:product_id>', methods =['PUT'])
+@jwt_required()
+def update_products(product_id):
+    body = request.get_json()
+    update_product = Products.query.filter_by(id=product_id).first()
+    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
+    category_info = category.serialize()
+   
+    if body['name']: update_product.name = body['name']
+    if body['description']: update_product.description = body['description']
+    if body['category_name']: update_product.category_id = category_info['id']
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Product updated"
+    }
+      
     return jsonify(response_body), 200
+
+@api.route('/delete_product/<int:product_id>', methods =['DELETE'])
+def delete_product(product_id):
+    delete_product = Products.query.filter_by(id=product_id).first()
+
+    db.session.delete(delete_product)
+    db.session.commit()
+
+    response_body = {
+        "message": "Product deleted"
+    }
+      
+    return jsonify(response_body), 200
+
+# Variation Services
+
+@api.route('/get_variation', methods=['GET'])
+def get_variation():
+    
+    all_variations= Variation.query.all()
+    result = list(map(lambda item: item.serialize(), all_variations))
+
+    return jsonify(result) 
 
 @api.route('/add_variation', methods=['POST'])
 @jwt_required()
@@ -231,12 +281,16 @@ def add_variation():
     
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
+    variation = Variation.query.filter_by(name=body['name']).first()
+    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
+    category_info = category.serialize()
     body = request.get_json()
 
-    if user.is_admin is True:
+    if user.is_admin is True and variation == None:
 
         variation = Variation(
-        name = body['name']
+        name = body['name'],
+        category_id = category_info['id']
         )
         db.session.add(variation)
         db.session.commit()
@@ -247,6 +301,48 @@ def add_variation():
 
     return jsonify(response_body), 200
 
+@api.route('/update_variation/<int:variation_id>', methods =['PUT'])
+@jwt_required()
+def update_variation(variation_id):
+    body = request.get_json()
+    update_variation = Variation.query.filter_by(id=variation_id).first()
+    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
+    category_info = category.serialize()
+   
+    if body['name']: update_variation.name = body['name']
+    if body['category_name']: update_variation.category_id = category_info['id']
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Variation updated"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/delete_variation/<int:variation_id>', methods =['DELETE'])
+def delete_variation(variation_id):
+    delete_variation = Variation.query.filter_by(id=variation_id).first()
+
+    db.session.delete(delete_variation)
+    db.session.commit()
+
+    response_body = {
+        "message": "Variation deleted"
+    }
+      
+    return jsonify(response_body), 200
+
+# Variation Options Services
+
+@api.route('/get_variation_option/<int:variation_id>', methods=['GET'])
+def get_variation_option(variation_id):
+    
+    all_variations_options= VariationOption.query.filter_by(variation_id=variation_id).all()
+    result = list(map(lambda item: item.serialize(), all_variations_options))
+
+    return jsonify(result) 
+
 @api.route('/add_variation_option/<int:variation_id>', methods=['POST'])
 @jwt_required()
 def add_variation_option(variation_id):
@@ -254,8 +350,9 @@ def add_variation_option(variation_id):
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
     body = request.get_json()
+    variation_option = VariationOption.query.filter_by(value=body['value']).first()
 
-    if user.is_admin is True:
+    if user.is_admin is True and variation_option == None:
 
         variation_option = VariationOption(
         value = body['value'],
@@ -265,10 +362,52 @@ def add_variation_option(variation_id):
         db.session.commit()
 
     response_body = {
-        "message": "Variation created"
+        "message": "Variation option created"
     }
 
     return jsonify(response_body), 200
+
+@api.route('/update_variation_option/<int:variation_option_id>', methods =['PUT'])
+@jwt_required()
+def update_variation_option(variation_option_id):
+    body = request.get_json()
+    update_variation_option = VariationOption.query.filter_by(id=variation_option_id).first()
+    variation = Variation.query.filter_by(id=body["variation_id"]).first()
+    variation_info = variation.serialize()
+   
+    if body['value']: update_variation_option.value = body['value']
+    if body['variation_id']: update_variation_option.variation_id = variation_info['id']
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Variation option updated"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/delete_variation_option/<int:variation_option_id>', methods =['DELETE'])
+def delete_variation_option(variation_option_id):
+    delete_variation_option = VariationOption.query.filter_by(id=variation_option_id).first()
+
+    db.session.delete(delete_variation_option)
+    db.session.commit()
+
+    response_body = {
+        "message": "Variation option deleted"
+    }
+      
+    return jsonify(response_body), 200
+
+# Product Item services
+
+@api.route('/get_product_item/<int:product_id>', methods=['GET'])
+def get_product_item(product_id):
+    
+    all_product_items= ProductItem.query.filter_by(product_id=product_id).all()
+    result = list(map(lambda item: item.serialize(), all_product_items))
+
+    return jsonify(result) 
 
 @api.route('/add_product_item/<int:product_id>', methods=['POST'])
 @jwt_required()
@@ -277,10 +416,14 @@ def add_product_item(product_id):
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
     body = request.get_json()
+    product_item = ProductItem.query.filter_by(name=body['name']).first()
+    product_item_info = product_item.serialize()
 
-    if user.is_admin is True:
+
+    if user.is_admin is True and product_item == None:
 
         product_item = ProductItem(
+        name = body['name'],
         product_id = product_id,
         sku = body['sku'],
         qty_in_stock = body['qty_in_stock'],
@@ -296,4 +439,101 @@ def add_product_item(product_id):
 
     return jsonify(response_body), 200
 
+@api.route('/update_product_item/<int:product_item_id>', methods =['PUT'])
+@jwt_required()
+def update_product_item(product_item_id):
+    body = request.get_json()
+    update_product_item = ProductItem.query.filter_by(id=product_item_id).first()
+    product = Products.query.filter_by(name=body["product_name"]).first()
+    product_info = product.serialize()
+   
+    if body['name']: update_product_item.name = body['name']
+    if body['product_id']: update_product_item.product_id = product_info['id']
+    if body['sku']: update_product_item.sku = body['sku']
+    if body['qty_in_stock']: update_product_item.qty_in_stock = body['qty_in_stock']
+    if body['price']: update_product_item.price = body['price']
 
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Product item updated"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/delete_product_item/<int:product_item_id>', methods =['DELETE'])
+def delete_product_item(product_item_id):
+    delete_product_item = ProductItem.query.filter_by(id=product_item_id).first()
+
+    db.session.delete(delete_product_item)
+    db.session.commit()
+
+    response_body = {
+        "message": "Product item deleted"
+    }
+      
+    return jsonify(response_body), 200
+
+# Product category services
+
+@api.route('/get_category', methods=['GET'])
+def get_category():
+    
+    all_categories = ProductCategory.query.all()
+    result = list(map(lambda item: item.serialize(), all_categories))
+
+    return jsonify(result) 
+
+@api.route('/add_category', methods=['POST'])
+@jwt_required()
+def add_category():
+    
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    body = request.get_json()
+    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
+
+    if user.is_admin is True and category == None:
+
+        category = ProductCategory(category_name = body['category_name'])
+        db.session.add(category)
+        db.session.commit()
+
+        response_body = {
+            "message": "Category created"
+        }
+
+        return jsonify(response_body), 200
+    else:
+        return jsonify({"msg": "Category already exists with this name"}), 401
+
+@api.route('/update_category/<int:category_id>', methods =['PUT'])
+@jwt_required()
+def update_category(category_id):
+    body = request.get_json()
+    update_category = ProductCategory.query.filter_by(id=category_id).first()
+    print(update_category)
+    print(body)
+    if body['category_name']: update_category.category_name = body['category_name']
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Category updated"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/delete_category/<int:category_id>', methods =['DELETE'])
+def delete_category(category_id):
+    delete_category = ProductCategory.query.filter_by(id=category_id).first()
+
+    db.session.delete(delete_category)
+    db.session.commit()
+
+    response_body = {
+        "message": "Product category deleted"
+    }
+      
+    return jsonify(response_body), 200
