@@ -2,7 +2,7 @@
 import os
 from flask_admin import Admin
 from api.models import db, User, Address, UserAddress, ProductCategory, Promotion, PromotionCategory, Products, ProductItem
-from api.models import Variation, VariationOption, ProductConfiguration, PaymentType, UserPaymentMethod, ShoppingCart, ShoppingCartItem
+from api.models import Size, Material, Crystal, PaymentType, UserPaymentMethod, ShoppingCart, ShoppingCartItem
 from api.models import ShippingMethod, ShopOrder, OrderLine, UserReview
 from flask_admin.contrib.sqla import ModelView
 
@@ -21,9 +21,9 @@ def setup_admin(app):
     admin.add_view(ModelView(PromotionCategory, db.session))
     admin.add_view(ModelView(Products, db.session))
     admin.add_view(ModelView(ProductItem, db.session))
-    admin.add_view(ModelView(Variation, db.session))
-    admin.add_view(ModelView(VariationOption, db.session))
-    admin.add_view(ModelView(ProductConfiguration, db.session))
+    admin.add_view(ModelView(Size, db.session))
+    admin.add_view(ModelView(Material, db.session))
+    admin.add_view(ModelView(Crystal, db.session))
     admin.add_view(ModelView(PaymentType, db.session))
     admin.add_view(ModelView(UserPaymentMethod, db.session))
     admin.add_view(ModelView(ShoppingCart, db.session))

@@ -3,7 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 from flask import Flask, request, jsonify, url_for, Blueprint, Response
 from api.models import db, User, Address, UserAddress, ProductCategory, Promotion, PromotionCategory, Products, ProductItem
-from api.models import Variation, VariationOption, ProductConfiguration, PaymentType, UserPaymentMethod, ShoppingCart, ShoppingCartItem
+from api.models import Size, Crystal, Material, PaymentType, UserPaymentMethod, ShoppingCart, ShoppingCartItem
 from api.models import OrderStatus, ShippingMethod, ShopOrder, OrderLine, UserReview
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
@@ -194,13 +194,20 @@ def delete_address(address_id):
       
     return jsonify(response_body), 200
 
-@api.route('/get_products', methods=['GET'])
-def get_products():
+@api.route('/get_all_products', methods=['GET'])
+def get_all_products():
     
     all_products = Products.query.all()
     result = list(map(lambda item: item.serialize(), all_products))
 
     return jsonify(result) 
+
+@api.route('/get_product/<int:product_id>', methods=['GET'])
+def get_product(product_id):
+    
+    product = Products.query.filter_by(id=product_id).first()
+
+    return jsonify(product.serialize())
 
 @api.route('/add_products', methods=['POST'])
 @jwt_required()
@@ -212,7 +219,6 @@ def add_products():
     product = Products.query.filter_by(name=body["name"]).first()
     category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
     category_info = category.serialize()
-    print(category_info)
 
     if user.is_admin is True and product == None:
 
@@ -267,147 +273,269 @@ def delete_product(product_id):
 
 # Variation Services
 
-@api.route('/get_variation', methods=['GET'])
-def get_variation():
+@api.route('/get_size', methods=['GET'])
+def get_size():
     
-    all_variations= Variation.query.all()
-    result = list(map(lambda item: item.serialize(), all_variations))
+    all_sizes= Size.query.all()
+    result = list(map(lambda item: item.serialize(), all_sizes))
 
     return jsonify(result) 
 
-@api.route('/add_variation', methods=['POST'])
+@api.route('/add_size', methods=['POST'])
 @jwt_required()
-def add_variation():
+def add_size():
     
     current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
-    variation = Variation.query.filter_by(name=body['name']).first()
-    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
-    category_info = category.serialize()
     body = request.get_json()
+    user = User.query.filter_by(email=current_user).first()
+    size = Size.query.filter_by(size_value=body['size_value']).first()
 
-    if user.is_admin is True and variation == None:
+    if user.is_admin is True and size == None:
 
-        variation = Variation(
-        name = body['name'],
-        category_id = category_info['id']
-        )
-        db.session.add(variation)
+        size = Size(
+        size_value = body['size_value'])
+        db.session.add(size)
         db.session.commit()
 
     response_body = {
-        "message": "Variation created"
+        "message": "Size value created"
     }
 
     return jsonify(response_body), 200
 
-@api.route('/update_variation/<int:variation_id>', methods =['PUT'])
+@api.route('/update_size/<int:size_id>', methods =['PUT'])
 @jwt_required()
-def update_variation(variation_id):
+def update_size(size_id):
     body = request.get_json()
-    update_variation = Variation.query.filter_by(id=variation_id).first()
-    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
-    category_info = category.serialize()
-   
-    if body['name']: update_variation.name = body['name']
-    if body['category_name']: update_variation.category_id = category_info['id']
+    update_size = Size.query.filter_by(id=size_id).first()
+    
+    if body['size_value']: update_size.size_value = body['size_value']
 
     db.session.commit()
 
     response_body = {
-        "message": "Variation updated"
+        "message": "Size value updated"
     }
       
     return jsonify(response_body), 200
 
-@api.route('/delete_variation/<int:variation_id>', methods =['DELETE'])
-def delete_variation(variation_id):
-    delete_variation = Variation.query.filter_by(id=variation_id).first()
+@api.route('/delete_size/<int:size_id>', methods =['DELETE'])
+def delete_size(size_id):
+    delete_size = Size.query.filter_by(id=size_id).first()
+    # all_product_item = ProductItem.query.filter_by(size_id=size_id).all()
+    # result = list(map(lambda item: item.serialize(), all_product_item))
+    # print(result)
 
-    db.session.delete(delete_variation)
+    db.session.delete(delete_size)
     db.session.commit()
 
     response_body = {
-        "message": "Variation deleted"
+        "message": "Size deleted"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/get_material', methods=['GET'])
+def get_material():
+    
+    all_materials= Material.query.all()
+    result = list(map(lambda item: item.serialize(), all_materials))
+
+    return jsonify(result) 
+
+@api.route('/add_material', methods=['POST'])
+@jwt_required()
+def add_material():
+    
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    body = request.get_json()
+    material = Material.query.filter_by(material_value=body['material_value']).first()
+
+    if user.is_admin is True and material == None:
+
+        material = Material(
+        material_value = body['material_value'])
+        db.session.add(material)
+        db.session.commit()
+
+    response_body = {
+        "message": "Material value created"
+    }
+
+    return jsonify(response_body), 200
+
+@api.route('/update_material/<int:material_id>', methods =['PUT'])
+@jwt_required()
+def update_material(material_id):
+    body = request.get_json()
+    update_material = Material.query.filter_by(id=material_id).first()
+    
+    if body['material_value']: update_material.material_value = body['material_value']
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Material value updated"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/delete_material/<int:material_id>', methods =['DELETE'])
+def delete_material(material_id):
+    delete_material = Material.query.filter_by(id=material_id).first()
+
+    db.session.delete(delete_material)
+    db.session.commit()
+
+    response_body = {
+        "message": "Material deleted"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/get_crystal', methods=['GET'])
+def get_crystal():
+    
+    all_crystals= Crystal.query.all()
+    result = list(map(lambda item: item.serialize(), all_crystals))
+
+    return jsonify(result) 
+
+@api.route('/add_crystal', methods=['POST'])
+@jwt_required()
+def add_crystal():
+    
+    current_user = get_jwt_identity()
+    body = request.get_json()
+    user = User.query.filter_by(email=current_user).first()
+    crystal = Crystal.query.filter_by(crystal_value=body['crystal_value']).first()
+
+    if user.is_admin is True and crystal == None:
+
+        crystal = Crystal(
+        crystal_value = body['crystal_value'])
+        db.session.add(crystal)
+        db.session.commit()
+
+    response_body = {
+        "message": "Crystal value created"
+    }
+
+    return jsonify(response_body), 200
+
+@api.route('/update_crystal/<int:crystal_id>', methods =['PUT'])
+@jwt_required()
+def update_crystal(crystal_id):
+    body = request.get_json()
+    update_crystal = Crystal.query.filter_by(id=crystal_id).first()
+    
+    if body['crystal_value']: update_crystal.crystal_value = body['crystal_value']
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Crystal value updated"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/delete_crystal/<int:crystal_id>', methods =['DELETE'])
+def delete_crystal(crystal_id):
+    delete_crystal = Crystal.query.filter_by(id=crystal_id).first()
+
+    db.session.delete(delete_crystal)
+    db.session.commit()
+
+    response_body = {
+        "message": "Crystal deleted"
     }
       
     return jsonify(response_body), 200
 
 # Variation Options Services
 
-@api.route('/get_variation_option/<int:variation_id>', methods=['GET'])
-def get_variation_option(variation_id):
+# @api.route('/get_variation_option/<int:variation_id>', methods=['GET'])
+# def get_variation_option(variation_id):
     
-    all_variations_options= VariationOption.query.filter_by(variation_id=variation_id).all()
-    result = list(map(lambda item: item.serialize(), all_variations_options))
+#     all_variations_options= VariationOption.query.filter_by(variation_id=variation_id).all()
+#     result = list(map(lambda item: item.serialize(), all_variations_options))
 
-    return jsonify(result) 
+#     return jsonify(result) 
 
-@api.route('/add_variation_option/<int:variation_id>', methods=['POST'])
-@jwt_required()
-def add_variation_option(variation_id):
+# @api.route('/add_variation_option/<int:variation_id>', methods=['POST'])
+# @jwt_required()
+# def add_variation_option(variation_id):
     
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
-    body = request.get_json()
-    variation_option = VariationOption.query.filter_by(value=body['value']).first()
+#     current_user = get_jwt_identity()
+#     user = User.query.filter_by(email=current_user).first()
+#     body = request.get_json()
+#     variation_option = VariationOption.query.filter_by(value=body['value']).first()
 
-    if user.is_admin is True and variation_option == None:
+#     if user.is_admin is True and variation_option == None:
 
-        variation_option = VariationOption(
-        value = body['value'],
-        variation_id = variation_id
-        )
-        db.session.add(variation_option)
-        db.session.commit()
+#         variation_option = VariationOption(
+#         value = body['value'],
+#         variation_id = variation_id
+#         )
+#         db.session.add(variation_option)
+#         db.session.commit()
 
-    response_body = {
-        "message": "Variation option created"
-    }
+#     response_body = {
+#         "message": "Variation option created"
+#     }
 
-    return jsonify(response_body), 200
+#     return jsonify(response_body), 200
 
-@api.route('/update_variation_option/<int:variation_option_id>', methods =['PUT'])
-@jwt_required()
-def update_variation_option(variation_option_id):
-    body = request.get_json()
-    update_variation_option = VariationOption.query.filter_by(id=variation_option_id).first()
-    variation = Variation.query.filter_by(id=body["variation_id"]).first()
-    variation_info = variation.serialize()
+# @api.route('/update_variation_option/<int:variation_option_id>', methods =['PUT'])
+# @jwt_required()
+# def update_variation_option(variation_option_id):
+#     body = request.get_json()
+#     update_variation_option = VariationOption.query.filter_by(id=variation_option_id).first()
+#     variation = Variation.query.filter_by(id=body["variation_id"]).first()
+#     variation_info = variation.serialize()
    
-    if body['value']: update_variation_option.value = body['value']
-    if body['variation_id']: update_variation_option.variation_id = variation_info['id']
+#     if body['value']: update_variation_option.value = body['value']
+#     if body['variation_id']: update_variation_option.variation_id = variation_info['id']
 
-    db.session.commit()
+#     db.session.commit()
 
-    response_body = {
-        "message": "Variation option updated"
-    }
+#     response_body = {
+#         "message": "Variation option updated"
+#     }
       
-    return jsonify(response_body), 200
+#     return jsonify(response_body), 200
 
-@api.route('/delete_variation_option/<int:variation_option_id>', methods =['DELETE'])
-def delete_variation_option(variation_option_id):
-    delete_variation_option = VariationOption.query.filter_by(id=variation_option_id).first()
+# @api.route('/delete_variation_option/<int:variation_option_id>', methods =['DELETE'])
+# def delete_variation_option(variation_option_id):
+#     delete_variation_option = VariationOption.query.filter_by(id=variation_option_id).first()
 
-    db.session.delete(delete_variation_option)
-    db.session.commit()
+#     db.session.delete(delete_variation_option)
+#     db.session.commit()
 
-    response_body = {
-        "message": "Variation option deleted"
-    }
+#     response_body = {
+#         "message": "Variation option deleted"
+#     }
       
-    return jsonify(response_body), 200
+#     return jsonify(response_body), 200
 
 # Product Item services
 
-@api.route('/get_product_item/<int:product_id>', methods=['GET'])
-def get_product_item(product_id):
+@api.route('/get_all_product_items/<int:product_id>', methods=['GET'])
+def get_all_product_items(product_id):
     
     all_product_items= ProductItem.query.filter_by(product_id=product_id).all()
     result = list(map(lambda item: item.serialize(), all_product_items))
 
-    return jsonify(result) 
+    return jsonify(result)
+
+@api.route('/get_product_item/<int:product_id>', methods=['GET'])
+def get_product_item(product_id):
+    
+    body = request.get_json()
+    product_item= ProductItem.query.filter_by(product_id=product_id, size_id=body['size_id'], material_id=body['material_id'], crystal_id=body['crystal_id']).first()
+
+    return jsonify(product_item.serialize()) 
 
 @api.route('/add_product_item/<int:product_id>', methods=['POST'])
 @jwt_required()
@@ -417,14 +545,22 @@ def add_product_item(product_id):
     user = User.query.filter_by(email=current_user).first()
     body = request.get_json()
     product_item = ProductItem.query.filter_by(name=body['name']).first()
-    product_item_info = product_item.serialize()
-
-
+    size = Size.query.filter_by(size_value=body['size_value']).first()
+    size_info = size.serialize()
+    print(size_info)
+    material = Material.query.filter_by(material_value=body['material_value']).first()
+    material_info = material.serialize()
+    crystal = Crystal.query.filter_by(crystal_value=body['crystal_value']).first()
+    crystal_info = crystal.serialize()
+    
     if user.is_admin is True and product_item == None:
 
         product_item = ProductItem(
         name = body['name'],
         product_id = product_id,
+        size_id = size_info['id'],
+        material_id = material_info['id'],
+        crystal_id = crystal_info['id'],
         sku = body['sku'],
         qty_in_stock = body['qty_in_stock'],
         #product_image check how to add image

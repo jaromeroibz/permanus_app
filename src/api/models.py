@@ -123,37 +123,82 @@ class PromotionCategory(db.Model):
             "promotion_id": self.promotion_id
         }
 
-class Variation(db.Model):
-    __tablename__ = 'variation'
+class Size(db.Model):
+    __tablename__ = 'size'
     id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(80), nullable = False, unique = True)
-    category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'))
-    category = db.relationship(ProductCategory)
+    size_value = db.Column(db.String(10), nullable = False, unique = True)
+    product_item = db.relationship("ProductItem", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="size")
 
     def __repr__(self):
-        return f'<Variation {self.id}>'
+        return f'<Size {self.id}>'
     
     def serialize(self):
         return{
             "id": self.id,
-            "name": self.name
+            "size_value": self.size_value
         }
 
-class VariationOption(db.Model):
-    __tablename__ = 'variation_option'
+class Crystal(db.Model):
+    __tablename__ = 'crystal'
     id = db.Column(db.Integer, primary_key = True)
-    value = db.Column(db.String(80), nullable = False, unique = True)
-    variation_id = db.Column(db.Integer, db.ForeignKey('variation.id'))
-    variation = db.relationship(Variation)
+    crystal_value = db.Column(db.String(10), nullable = False, unique = True)
+    product_item = db.relationship("ProductItem", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="crystal")
 
     def __repr__(self):
-        return f'<VariationOption {self.id}>'
+        return f'<Crystal {self.id}>'
     
     def serialize(self):
         return{
             "id": self.id,
-            "value": self.value
+            "crystal_value": self.crystal_value
         }
+
+class Material(db.Model):
+    __tablename__ = 'material'
+    id = db.Column(db.Integer, primary_key = True)
+    material_value = db.Column(db.String(10), nullable = False, unique = True)
+    product_item = db.relationship("ProductItem", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="material")
+
+    def __repr__(self):
+        return f'<Material {self.id}>'
+    
+    def serialize(self):
+        return{
+            "id": self.id,
+            "material_value": self.material_value
+        }
+
+# class Variation(db.Model):
+#     __tablename__ = 'variation'
+#     id = db.Column(db.Integer, primary_key = True)
+#     name = db.Column(db.String(80), nullable = False, unique = True)
+#     category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'))
+#     category = db.relationship(ProductCategory)
+
+#     def __repr__(self):
+#         return f'<Variation {self.id}>'
+    
+#     def serialize(self):
+#         return{
+#             "id": self.id,
+#             "name": self.name
+#         }
+
+# class VariationOption(db.Model):
+#     __tablename__ = 'variation_option'
+#     id = db.Column(db.Integer, primary_key = True)
+#     value = db.Column(db.String(80), nullable = False, unique = True)
+#     variation_id = db.Column(db.Integer, db.ForeignKey('variation.id'))
+#     variation = db.relationship(Variation)
+
+#     def __repr__(self):
+#         return f'<VariationOption {self.id}>'
+    
+#     def serialize(self):
+#         return{
+#             "id": self.id,
+#             "value": self.value
+#         }
 
 class Products(db.Model):
     __tablename__ = 'products'
@@ -162,6 +207,7 @@ class Products(db.Model):
     description = db.Column(db.String(120), unique=False, nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'))
     category = db.relationship(ProductCategory)
+    product_item = db.relationship("ProductItem", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="products")
     #product_image figure out how to add image    
 
 
@@ -179,12 +225,19 @@ class ProductItem(db.Model):
     __tablename__ = 'product_item'
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(80), unique=True, nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
-    products = db.relationship(Products)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id', ondelete="CASCADE"))
+    size_id = db.Column(db.Integer, db.ForeignKey('size.id', ondelete="CASCADE"))
+    material_id = db.Column(db.Integer, db.ForeignKey('material.id', ondelete="CASCADE"))
+    crystal_id = db.Column(db.Integer, db.ForeignKey('crystal.id', ondelete="CASCADE"))
+    products = db.relationship(Products, back_populates="product_item")
+    size = db.relationship(Size, back_populates="product_item")
+    material = db.relationship(Material, back_populates="product_item")
+    crystal = db.relationship(Crystal, back_populates="product_item")
     sku = db.Column(db.Integer, nullable = False, unique = True)
     qty_in_stock = db.Column(db.Integer, nullable = False, unique = False)
     price = db.Column(db.Integer, nullable = False, unique = False)
-    #product_image figure out how to add image    
+    #product_image figure out how to add image
+    product_image = db.Column(db.String(300), nullable = True, unique = True)    
 
     def __repr__(self):
         return f'<ProductItem {self.id}>'
@@ -192,30 +245,16 @@ class ProductItem(db.Model):
     def serialize(self):
         return{
             "id": self.id,
+            "name": self.name,
             "product_id": self.product_id,
+            "size_id": self.size_id,
+            "material_id": self.material_id,
+            "crystal_id": self.crystal_id,
             "sku": self.sku,
             "qty_in_stock": self.qty_in_stock,
             "price": self.price,
             "product_image": self.product_image
-        }
-
-class ProductConfiguration(db.Model):
-    __tablename__ = 'product_configuration'
-    id = db.Column(db.Integer, primary_key = True)
-    product_item_id = db.Column(db.Integer, db.ForeignKey('product_item.id'))
-    variation_option_id = db.Column(db.Integer, db.ForeignKey('variation_option.id'))
-    product_item = db.relationship(ProductItem)
-    variation_option = db.relationship(VariationOption)
-
-    def __repr__(self):
-        return f'<ProductConfiguration {self.id}>'
-
-    def serialize(self):
-        return{
-            "id": self.id,
-            "product_item_id": self.product_item_id,
-            "variation_option_id": self.variation_option_id
-        }    
+        }  
     
 class PaymentType(db.Model):
     __tablename__ = 'payment_type'
