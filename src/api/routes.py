@@ -453,72 +453,6 @@ def delete_crystal(crystal_id):
       
     return jsonify(response_body), 200
 
-# Variation Options Services
-
-# @api.route('/get_variation_option/<int:variation_id>', methods=['GET'])
-# def get_variation_option(variation_id):
-    
-#     all_variations_options= VariationOption.query.filter_by(variation_id=variation_id).all()
-#     result = list(map(lambda item: item.serialize(), all_variations_options))
-
-#     return jsonify(result) 
-
-# @api.route('/add_variation_option/<int:variation_id>', methods=['POST'])
-# @jwt_required()
-# def add_variation_option(variation_id):
-    
-#     current_user = get_jwt_identity()
-#     user = User.query.filter_by(email=current_user).first()
-#     body = request.get_json()
-#     variation_option = VariationOption.query.filter_by(value=body['value']).first()
-
-#     if user.is_admin is True and variation_option == None:
-
-#         variation_option = VariationOption(
-#         value = body['value'],
-#         variation_id = variation_id
-#         )
-#         db.session.add(variation_option)
-#         db.session.commit()
-
-#     response_body = {
-#         "message": "Variation option created"
-#     }
-
-#     return jsonify(response_body), 200
-
-# @api.route('/update_variation_option/<int:variation_option_id>', methods =['PUT'])
-# @jwt_required()
-# def update_variation_option(variation_option_id):
-#     body = request.get_json()
-#     update_variation_option = VariationOption.query.filter_by(id=variation_option_id).first()
-#     variation = Variation.query.filter_by(id=body["variation_id"]).first()
-#     variation_info = variation.serialize()
-   
-#     if body['value']: update_variation_option.value = body['value']
-#     if body['variation_id']: update_variation_option.variation_id = variation_info['id']
-
-#     db.session.commit()
-
-#     response_body = {
-#         "message": "Variation option updated"
-#     }
-      
-#     return jsonify(response_body), 200
-
-# @api.route('/delete_variation_option/<int:variation_option_id>', methods =['DELETE'])
-# def delete_variation_option(variation_option_id):
-#     delete_variation_option = VariationOption.query.filter_by(id=variation_option_id).first()
-
-#     db.session.delete(delete_variation_option)
-#     db.session.commit()
-
-#     response_body = {
-#         "message": "Variation option deleted"
-#     }
-      
-#     return jsonify(response_body), 200
-
 # Product Item services
 
 @api.route('/get_all_product_items/<int:product_id>', methods=['GET'])
@@ -673,3 +607,86 @@ def delete_category(category_id):
     }
       
     return jsonify(response_body), 200
+
+# Promotions Services
+
+@api.route('/get_promotion', methods=['GET'])
+def get_promotion():
+    
+    all_promotions = Promotion.query.all()
+    result = list(map(lambda item: item.serialize(), all_promotions))
+
+    return jsonify(result) 
+
+@api.route('/add_promotion', methods=['POST'])
+@jwt_required()
+def add_promotion():
+    
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    body = request.get_json()
+    promotion = Promotion.query.filter_by(name=body["name"]).first()
+    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
+    category_info = category.serialize()
+
+    if user.is_admin is True and promotion == None:
+
+        promotion = Promotion(
+            name = body['name'],
+            description = body['description'],
+            discount_rate = body['discount_rate'],
+            start_date = body['start_date'],
+            end_date = body['end_date']
+            )
+        db.session.add(promotion)
+        db.session.commit()
+
+        promotion_info = promotion.serialize()
+        promotion_category = PromotionCategory(
+            category_id = category_info['id'],
+            promotion_id = promotion_info['id']
+        )
+        db.session.add(promotion_category)
+        db.session.commit()
+
+        response_body = {
+            "message": "Promotion created"
+        }
+
+        return jsonify(response_body), 200
+    else:
+        return jsonify({"msg": "Promotion already exists with this name"}), 401
+
+@api.route('/update_promotion/<int:promotion_id>', methods =['PUT'])
+@jwt_required()
+def update_promotion(promotion_id):
+    body = request.get_json()
+    update_promotion = Promotion.query.filter_by(id=promotion_id).first()
+
+    if body['name']: update_promotion.name = body['name']
+    if body['description']: update_promotion.description = body['description']
+    if body['discount_rate']: update_promotion.discount_rate = body['discount_rate']
+    if body['start_date']: update_promotion.start_date = body['start_date']
+    if body['end_date']: update_promotion.end_date = body['end_date']
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Promotion updated"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/delete_promotion/<int:promotion_id>', methods =['DELETE'])
+def delete_promotion(promotion_id):
+    delete_promotion = Promotion.query.filter_by(id=promotion_id).first()
+
+    db.session.delete(delete_promotion)
+    db.session.commit()
+
+    response_body = {
+        "message": "Promotion deleted"
+    }
+      
+    return jsonify(response_body), 200
+

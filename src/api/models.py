@@ -91,6 +91,7 @@ class Promotion(db.Model):
     discount_rate = db.Column(db.Integer, unique=False, nullable=True)
     start_date = db.Column(db.String(20), unique=False, nullable=False)
     end_date = db.Column(db.String(20), unique=False, nullable=False)
+    promotion_category = db.relationship("PromotionCategory", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="promotion")
 
     def __repr__(self):
         return f'<Promotion {self.id}>'
@@ -108,8 +109,8 @@ class Promotion(db.Model):
 class PromotionCategory(db.Model):
     __tablename__='promotion_category'
     id = db.Column(db.Integer, primary_key = True)
-    category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'))
-    promotion_id = db.Column(db.Integer, db.ForeignKey('promotion.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('product_category.id', ondelete="CASCADE"))
+    promotion_id = db.Column(db.Integer, db.ForeignKey('promotion.id', ondelete="CASCADE"))
     category = db.relationship(ProductCategory)
     promotion = db.relationship(Promotion)
 
@@ -167,38 +168,6 @@ class Material(db.Model):
             "id": self.id,
             "material_value": self.material_value
         }
-
-# class Variation(db.Model):
-#     __tablename__ = 'variation'
-#     id = db.Column(db.Integer, primary_key = True)
-#     name = db.Column(db.String(80), nullable = False, unique = True)
-#     category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'))
-#     category = db.relationship(ProductCategory)
-
-#     def __repr__(self):
-#         return f'<Variation {self.id}>'
-    
-#     def serialize(self):
-#         return{
-#             "id": self.id,
-#             "name": self.name
-#         }
-
-# class VariationOption(db.Model):
-#     __tablename__ = 'variation_option'
-#     id = db.Column(db.Integer, primary_key = True)
-#     value = db.Column(db.String(80), nullable = False, unique = True)
-#     variation_id = db.Column(db.Integer, db.ForeignKey('variation.id'))
-#     variation = db.relationship(Variation)
-
-#     def __repr__(self):
-#         return f'<VariationOption {self.id}>'
-    
-#     def serialize(self):
-#         return{
-#             "id": self.id,
-#             "value": self.value
-#         }
 
 class Products(db.Model):
     __tablename__ = 'products'
