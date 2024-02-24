@@ -91,7 +91,6 @@ class Promotion(db.Model):
     discount_rate = db.Column(db.Integer, unique=False, nullable=True)
     start_date = db.Column(db.String(20), unique=False, nullable=False)
     end_date = db.Column(db.String(20), unique=False, nullable=False)
-    promotion_category = db.relationship("PromotionCategory", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="promotion")
 
     def __repr__(self):
         return f'<Promotion {self.id}>'
@@ -174,8 +173,8 @@ class Products(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(80), unique=False, nullable=False)
     description = db.Column(db.String(120), unique=False, nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'))
-    category = db.relationship(ProductCategory)
+    category_id = db.Column(db.Integer, db.ForeignKey('product_category.id', ondelete="CASCADE"))
+    category = db.relationship("ProductCategory")
     product_item = db.relationship("ProductItem", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="products")
     #product_image figure out how to add image    
 

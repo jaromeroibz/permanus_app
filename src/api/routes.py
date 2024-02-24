@@ -662,12 +662,17 @@ def add_promotion():
 def update_promotion(promotion_id):
     body = request.get_json()
     update_promotion = Promotion.query.filter_by(id=promotion_id).first()
+    update_promotion_category = PromotionCategory.query.filter_by(promotion_id=promotion_id).first()
+    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
+    category_info = category.serialize()
 
     if body['name']: update_promotion.name = body['name']
     if body['description']: update_promotion.description = body['description']
     if body['discount_rate']: update_promotion.discount_rate = body['discount_rate']
     if body['start_date']: update_promotion.start_date = body['start_date']
     if body['end_date']: update_promotion.end_date = body['end_date']
+    if body['category_name']: update_promotion_category.category_id = category_info['id']
+
 
     db.session.commit()
 
