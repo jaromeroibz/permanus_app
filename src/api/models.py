@@ -72,7 +72,9 @@ class UserAddress(db.Model):
 class ProductCategory(db.Model):
     __tablename__ = 'product_category'
     id = db.Column(db.Integer, primary_key = True)
-    category_name = db.Column(db.String(80))    
+    category_name = db.Column(db.String(80))   
+    products = db.relationship("Products", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="product_category")
+  
 
     def __repr__(self):
         return f'<ProductCategory {self.id}>' 
@@ -174,8 +176,8 @@ class Products(db.Model):
     name = db.Column(db.String(80), unique=False, nullable=False)
     description = db.Column(db.String(120), unique=False, nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('product_category.id', ondelete="CASCADE"))
-    category = db.relationship("ProductCategory")
     product_item = db.relationship("ProductItem", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="products")
+    product_category = db.relationship(ProductCategory, back_populates="products")
     #product_image figure out how to add image    
 
 
@@ -228,6 +230,8 @@ class PaymentType(db.Model):
     __tablename__ = 'payment_type'
     id = db.Column(db.Integer, primary_key = True)
     payment_type = db.Column(db.String(80), nullable = False, unique = True)
+    shop_order = db.relationship("ShopOrder", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="payment_type")
+
 
     def __repr__(self):
         return f'<PaymentType {self.id}>'
@@ -238,31 +242,31 @@ class PaymentType(db.Model):
             "payment_type": self.payment_type
         }
 
-class UserPaymentMethod(db.Model):
-    __tablename__ = 'user_payment_method'
-    id = db.Column(db.Integer, primary_key = True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    payment_type_id = db.Column(db.Integer, db.ForeignKey('payment_type.id'))
-    provider = db.Column(db.String(80), nullable = False, unique = False)
-    account_number = db.Column(db.String(80), nullable = False, unique = False)
-    expiry_date = db.Column(db.String(5), nullable = False, unique = False)
-    is_default = db.Column(db.Boolean(), unique=False, nullable=False)
-    payment_type = db.relationship(PaymentType)
-    user = db.relationship(User)
+# class UserPaymentMethod(db.Model):
+#     __tablename__ = 'user_payment_method'
+#     id = db.Column(db.Integer, primary_key = True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     payment_type_id = db.Column(db.Integer, db.ForeignKey('payment_type.id'))
+#     provider = db.Column(db.String(80), nullable = False, unique = False)
+#     account_number = db.Column(db.String(80), nullable = False, unique = False)
+#     expiry_date = db.Column(db.String(5), nullable = False, unique = False)
+#     is_default = db.Column(db.Boolean(), unique=False, nullable=False)
+#     payment_type = db.relationship(PaymentType, back_populates="user_payment_method")
+#     user = db.relationship(User)
 
-    def __repr__(self):
-        return f'<UserPaymentMethod {self.id}>'
+#     def __repr__(self):
+#         return f'<UserPaymentMethod {self.id}>'
     
-    def serialize(self):
-        return{
-            "id": self.id,
-            "user_id": self.user_id,
-            "payment_type_id": self.payment_type_id,
-            "provider": self.provider,
-            "account_number": self.account_number,
-            "expiry_date":self.expiry_date,
-            "is_default": self.is_default
-        }
+#     def serialize(self):
+#         return{
+#             "id": self.id,
+#             "user_id": self.user_id,
+#             "payment_type_id": self.payment_type_id,
+#             "provider": self.provider,
+#             "account_number": self.account_number,
+#             "expiry_date":self.expiry_date,
+#             "is_default": self.is_default
+#         }
     
 class ShoppingCart(db.Model):
     __tablename__ = 'shopping_cart'
@@ -322,14 +326,14 @@ class ShopOrder(db.Model):
     __tablename__ = 'shop_order'
     id = db.Column(db.Integer, primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user_payment_method_id = db.Column(db.Integer, db.ForeignKey('user_payment_method.id'))
+    payment_type_id = db.Column(db.Integer, db.ForeignKey('payment_type.id'))
     order_date = db.Column(db.String(80), nullable = False, unique = False)
     shipping_address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     order_total = db.Column(db.Integer, nullable = False, unique = False)
     order_status = db.Column(db.String(80), nullable = False, unique = False)
     shipping_method_id = db.Column(db.Integer, db.ForeignKey('shipping_method.id'))
     shipping_method = db.relationship(ShippingMethod)
-    user_payment_method = db.relationship(UserPaymentMethod)
+    payment_type = db.relationship(PaymentType, back_populates="shop_order")
     user = db.relationship(User)
     shipping_address = db.relationship(Address)
     
@@ -341,7 +345,7 @@ class ShopOrder(db.Model):
         return{
             "id": self.id,
             "user_id": self.user_id,
-            "user_payment_method_id": self.user_payment_method_id,
+            "payment_type_id": self.payment_type_id,
             "order_date": self.order_date,
             "shipping_address_id": self.shipping_address_id,
             "order_total": self.order_total,
