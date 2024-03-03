@@ -178,8 +178,6 @@ class Products(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('product_category.id', ondelete="CASCADE"))
     product_item = db.relationship("ProductItem", cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="products")
     product_category = db.relationship(ProductCategory, back_populates="products")
-    #product_image figure out how to add image    
-
 
     def __repr__(self):
         return f'<Products {self.id}>' 
@@ -206,8 +204,6 @@ class ProductItem(db.Model):
     sku = db.Column(db.Integer, nullable = False, unique = True)
     qty_in_stock = db.Column(db.Integer, nullable = False, unique = False)
     price = db.Column(db.Integer, nullable = False, unique = False)
-    #product_image figure out how to add image
-    product_image = db.Column(db.String(300), nullable = True, unique = True)    
 
     def __repr__(self):
         return f'<ProductItem {self.id}>'
@@ -241,32 +237,6 @@ class PaymentType(db.Model):
             "id": self.id,
             "payment_type": self.payment_type
         }
-
-# class UserPaymentMethod(db.Model):
-#     __tablename__ = 'user_payment_method'
-#     id = db.Column(db.Integer, primary_key = True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-#     payment_type_id = db.Column(db.Integer, db.ForeignKey('payment_type.id'))
-#     provider = db.Column(db.String(80), nullable = False, unique = False)
-#     account_number = db.Column(db.String(80), nullable = False, unique = False)
-#     expiry_date = db.Column(db.String(5), nullable = False, unique = False)
-#     is_default = db.Column(db.Boolean(), unique=False, nullable=False)
-#     payment_type = db.relationship(PaymentType, back_populates="user_payment_method")
-#     user = db.relationship(User)
-
-#     def __repr__(self):
-#         return f'<UserPaymentMethod {self.id}>'
-    
-#     def serialize(self):
-#         return{
-#             "id": self.id,
-#             "user_id": self.user_id,
-#             "payment_type_id": self.payment_type_id,
-#             "provider": self.provider,
-#             "account_number": self.account_number,
-#             "expiry_date":self.expiry_date,
-#             "is_default": self.is_default
-#         }
     
 class ShoppingCart(db.Model):
     __tablename__ = 'shopping_cart'
@@ -334,6 +304,7 @@ class ShopOrder(db.Model):
     shipping_method_id = db.Column(db.Integer, db.ForeignKey('shipping_method.id'))
     shipping_method = db.relationship(ShippingMethod)
     payment_type = db.relationship(PaymentType, back_populates="shop_order")
+    order_line = db.relationship("OrderLine",  cascade = "all, delete, delete-orphan", passive_deletes=True, back_populates="shop_order")
     user = db.relationship(User)
     shipping_address = db.relationship(Address)
     
@@ -357,9 +328,9 @@ class OrderLine(db.Model):
     __tablename__ = 'order_line'
     id = db.Column(db.Integer, primary_key = True)
     product_item_id = db.Column(db.Integer, db.ForeignKey('product_item.id'))
-    order_id = db.Column(db.Integer, db.ForeignKey('shop_order.id'))
+    order_id = db.Column(db.Integer, db.ForeignKey('shop_order.id', ondelete="CASCADE"))
     qty = db.Column(db.Integer, nullable = False, unique = False)
-    order = db.relationship(ShopOrder)
+    shop_order = db.relationship(ShopOrder, back_populates="order_line")
     product_item = db.relationship(ProductItem)
 
     def __repr__(self):
@@ -397,66 +368,3 @@ class UserReview(db.Model):
             "comment": self.comment
         }
 
-
-class UserImg(db.Model):
-    __tablename__ = 'img'
-    id = db.Column(db.Integer, primary_key = True)
-    img = db.Column(db.Text, unique=True, nullable=False)
-    name = db.Column(db.Text, nullable = False)
-    mimetype = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = relationship(User)
-  
-    def __repr__(self):
-        return f'<Img {self.id}>'
-    
-    def serialize(self):
-        return{
-            "id": self.id,
-            "img": self.img,
-            "name": self.name,
-            "mimetype": self.mimetype,
-            "user_id": self.user_id
-        }
-    
-class ProductImg(db.Model):
-    __tablename__ = 'product_img'
-    id = db.Column(db.Integer, primary_key = True)
-    img = db.Column(db.Text, unique=True, nullable=False)
-    name = db.Column(db.Text, nullable = False)
-    mimetype = db.Column(db.Text, nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
-    product = relationship(Products)
-  
-    def __repr__(self):
-        return f'<Img {self.id}>'
-    
-    def serialize(self):
-        return{
-            "id": self.id,
-            "img": self.img,
-            "name": self.name,
-            "mimetype": self.mimetype,
-            "product_id": self.product_id
-        }
-
-class PaymentTypeImg(db.Model):
-    __tablename__ = 'payment_type_img'
-    id = db.Column(db.Integer, primary_key = True)
-    img = db.Column(db.Text, unique=True, nullable=False)
-    name = db.Column(db.Text, nullable = False)
-    mimetype = db.Column(db.Text, nullable=False)
-    payment_type_id = db.Column(db.Integer, db.ForeignKey('payment_type.id'))
-    payment_type = relationship(PaymentType)
-  
-    def __repr__(self):
-        return f'<Img {self.id}>'
-    
-    def serialize(self):
-        return{
-            "id": self.id,
-            "img": self.img,
-            "name": self.name,
-            "mimetype": self.mimetype,
-            "payment_type_id": self.payment_type_id
-        }

@@ -5,3 +5,69 @@
     one more css for each page that will contain the selected used 
     on that page only (the ones not reused in other pages).
 */
+*,
+*:before,
+*:after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+* {
+  font-family: "Acta Display Light", serif;
+}
+
+.announcement-bar {
+  max-width: 100%; 
+  padding: 0px 5px;
+  background-color: rgb(169, 211, 197);
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+body {
+  background-color: white;
+}
+
+nav {
+  height: 50vh;
+  width: 70vw;
+  min-width: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: auto;
+}
+
+a {
+  position: relative;
+  text-decoration: none;
+  color: rgb(14, 14, 14);
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  padding: 0 10px;
+}
+
+a:before,
+a:after {
+  content: "";
+  position: absolute;
+  height: 1px;
+  width: 0;
+  background-color: black;
+  transition: 0.5s;
+}
+
+a:after {
+  left: 0;
+  bottom: -10px;
+}
+
+a:hover{
+    color: black;
+}
+
+a:hover:after{
+  width: 100%;
+  color: black;
+}
