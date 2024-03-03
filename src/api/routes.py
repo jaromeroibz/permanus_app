@@ -3,7 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 from flask import Flask, request, jsonify, url_for, Blueprint, Response
 from api.models import db, User, Address, UserAddress, ProductCategory, Promotion, PromotionCategory, Products, ProductItem
-from api.models import Size, Crystal, Material, PaymentType, UserPaymentMethod, ShoppingCart, ShoppingCartItem
+from api.models import Size, Crystal, Material, PaymentType, ShoppingCart, ShoppingCartItem
 from api.models import OrderStatus, ShippingMethod, ShopOrder, OrderLine, UserReview
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
@@ -662,12 +662,17 @@ def add_promotion():
 def update_promotion(promotion_id):
     body = request.get_json()
     update_promotion = Promotion.query.filter_by(id=promotion_id).first()
+    update_promotion_category = PromotionCategory.query.filter_by(promotion_id=promotion_id).first()
+    category = ProductCategory.query.filter_by(category_name=body["category_name"]).first()
+    category_info = category.serialize()
 
     if body['name']: update_promotion.name = body['name']
     if body['description']: update_promotion.description = body['description']
     if body['discount_rate']: update_promotion.discount_rate = body['discount_rate']
     if body['start_date']: update_promotion.start_date = body['start_date']
     if body['end_date']: update_promotion.end_date = body['end_date']
+    if body['category_name']: update_promotion_category.category_id = category_info['id']
+
 
     db.session.commit()
 
@@ -690,3 +695,64 @@ def delete_promotion(promotion_id):
       
     return jsonify(response_body), 200
 
+# Payment type services
+
+@api.route('/get_payment_type', methods=['GET'])
+def get_payment_type():
+    
+    all_payment_types = PaymentType.query.all()
+    result = list(map(lambda item: item.serialize(), all_payment_types))
+
+    return jsonify(result) 
+
+@api.route('/add_payment_type', methods=['POST'])
+@jwt_required()
+def add_payment_type():
+    
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    body = request.get_json()
+    payment_type = PaymentType.query.filter_by(payment_type=body["payment_type"]).first()
+
+    if user.is_admin is True and payment_type == None:
+
+        payment_type = PaymentType(payment_type = body['payment_type'])
+        db.session.add(payment_type)
+        db.session.commit()
+
+        response_body = {
+            "message": "Payment type created"
+        }
+
+        return jsonify(response_body), 200
+    else:
+        return jsonify({"msg": "Payment type already exists with this name"}), 401
+    
+@api.route('/update_payment_type/<int:payment_type_id>', methods =['PUT'])
+@jwt_required()
+def update_payment_type(payment_type_id):
+    body = request.get_json()
+    update_payment_type = PaymentType.query.filter_by(id=payment_type_id).first()
+
+    if body['payment_type']: update_payment_type.payment_type = body['payment_type']
+
+    db.session.commit()
+
+    response_body = {
+        "message": "Payment type updated"
+    }
+      
+    return jsonify(response_body), 200
+
+@api.route('/delete_payment_type/<int:payment_type_id>', methods =['DELETE'])
+def delete_payment_type(payment_type_id):
+    delete_payment_type = PaymentType.query.filter_by(id=payment_type_id).first()
+
+    db.session.delete(delete_payment_type)
+    db.session.commit()
+
+    response_body = {
+        "message": "Payment type deleted"
+    }
+      
+    return jsonify(response_body), 200
