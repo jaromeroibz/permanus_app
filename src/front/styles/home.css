@@ -5,7 +5,7 @@
     one more css for each page that will contain the selected used 
     on that page only (the ones not reused in other pages).
 */
-*,
+/* *,
 *:before,
 *:after {
   padding: 0;
@@ -25,13 +25,22 @@
   letter-spacing: 1px;
 }
 
+.permanus-img{
+  border-radius: 50%;
+  height: auto;
+  max-width: 10%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 body {
   background-color: white;
 }
 
 nav {
-  height: 50vh;
-  width: 70vw;
+  height: 15vh;
+  width: 55vw;
   min-width: 600px;
   display: flex;
   align-items: center;
@@ -39,7 +48,7 @@ nav {
   margin: auto;
 }
 
-a {
+.nav-content {
   position: relative;
   text-decoration: none;
   color: rgb(14, 14, 14);
@@ -48,26 +57,26 @@ a {
   padding: 0 10px;
 }
 
-a:before,
-a:after {
+a.nav-content:before,
+a.nav-content:after {
   content: "";
   position: absolute;
-  height: 1px;
+  height: 0.5px;
   width: 0;
   background-color: black;
   transition: 0.5s;
 }
 
-a:after {
+a.nav-content:after {
   left: 0;
   bottom: -10px;
 }
 
-a:hover{
+a.nav-content:hover{
     color: black;
 }
 
-a:hover:after{
+a.nav-content:hover:after{
   width: 100%;
   color: black;
-}
+} */

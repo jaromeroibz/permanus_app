@@ -1,18 +1,34 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export const Navbar = () => {
 	return (
+		<>
 		<nav className="nav">
 			<div className="container">
-			<a href="#Brazaletes">Brazaletes</a>
-			<a href="#Anillos">Anillos</a>
-			<a href="#Body Necklaces">Body Necklaces</a>
-			<a href="#Necklaces">Necklaces</a>
-			<a href="#Tobilleras">Tobilleras</a>
-			<a href="#Piercing/Simuladores">Piercing/Simuladores</a>
-			<a href="#Colecciones">Colecciones</a>
-			<a href="#Edicion Limitada">Edicion Limitada</a>
+				<Link className="nav-content" to="/brazaletes">Brazaletes
+				<span class="material-symbols-outlined">expand_more</span>	
+				</Link>
+				<Link className="nav-content" to="/anillos">Anillos
+				<span class="material-symbols-outlined">expand_more</span>	
+				</Link>
+				<Link className="nav-content" to="/collares">Collares
+				<span class="material-symbols-outlined">expand_more</span>	
+				</Link>
+				<Link className="nav-content" to="/tobilleras">Tobilleras
+				<span class="material-symbols-outlined">expand_more</span>	
+				</Link>
+				<Link className="nav-content" to="/piercings">Piercing/Simuladores
+				<span class="material-symbols-outlined">expand_more</span>	
+				</Link>
+				<Link className="nav-content" to="/colecciones">Colecciones
+				<span class="material-symbols-outlined">expand_more</span>	
+				</Link>
+				<Link className="nav-content" to="/edicionlimitada">Edicion Limitada
+				<span class="material-symbols-outlined">expand_more</span>	
+				</Link>
 			</div>
 		</nav>
+		</>
 	);
 };

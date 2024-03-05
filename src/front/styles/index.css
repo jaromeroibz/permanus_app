@@ -1,3 +1,98 @@
 /* 
     General Styles used on every website (Don't Repeat Yourself)
 */
+.material-symbols-outlined {
+    font-variation-settings:
+    'FILL' 0,
+    'wght' 100,
+    'GRAD' 0,
+    'opsz' 24;
+  }
+
+  *,
+  *:before,
+  *:after {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  * {
+    font-family: "Acta Display Light", serif;
+  }
+  
+  .announcement-bar {
+    max-width: 100%; 
+    padding: 0px 5px;
+    background-color: rgb(169, 211, 197);
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  
+  .permanus-img{
+    border-radius: 50%;
+    height: auto;
+    max-width: 10%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  body {
+    background-color: white;
+  }
+
+  nav {
+    height: 15vh;
+    width: 70%;
+    /* min-width: 600px; */
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: auto;
+  }
+  
+  .nav-content {
+    position: relative;
+    text-decoration: none;
+    color: rgb(14, 14, 14);
+    font-size: 19px;
+    letter-spacing: 0.5px;
+    padding: 0 10px;
+  }
+  
+  a.nav-content:before,
+  a.nav-content:after {
+    content: "";
+    position: absolute;
+    height: 0.5px;
+    width: 0;
+    background-color: black;
+    transition: 0.5s;
+  }
+  
+  a.nav-content:after {
+    left: 0;
+    bottom: -10px;
+  }
+  
+  a.nav-content:hover{
+      color: black;
+  }
+  
+  a.nav-content:hover:after{
+    width: 100%;
+    color: black;
+  }  
+
+.signcontainer{
+    margin: auto;
+}
+#search{
+    border: 0;
+    border-bottom: 1px solid;
+    max-width: 150px;
+    padding-left: 0;
+    padding-bottom: 0;
+    font-size: 16px;
+}
